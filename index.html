@@ -2,12 +2,43 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>My first three.js app</title>
+    <title>🐝 The PID bee</title>
     <style>
-      body { margin: 0; }
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+        }
+        #c {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        a {
+            color: #2983ff;
+        }
+        #info {
+            position: absolute;
+            top: 0px;
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            font-family: sans-serif;
+            text-align: center;
+            z-index: 1;
+        }
     </style>
   </head>
   <body>
+    <div id="info">
+      Source code at
+      <a
+          href="https://github.com/Auresol/the-pid-bee"
+          target="_blank"
+          rel="noopener"
+          >Github</a
+      >
+    </div>
     <script type="module" src="/src/main.js"></script>
     <canvas id="c"></canvas>
   </body>

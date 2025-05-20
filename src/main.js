@@ -9,17 +9,22 @@ import {
     CubeRefractionMapping,
     Vector3,
 } from 'three'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { TextureLoader } from 'three';
+
+const gltfLoader = new GLTFLoader();
+const textureLoader = new TextureLoader();
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import { addGround } from './ground'
 import { addLights } from './light'
 
-import Controller from './controller'
+import { controller, generateController } from './controller'
 import { config } from './config'
 
-let renderer, camera, refractionCamera, scene, stats
+import { addBackground } from './utils/addHelper'
+import { addGUI } from './gui'
 
-let controller;
+let renderer, camera, scene
 
 init()
 animate()
@@ -48,10 +53,13 @@ function init() {
     controls.target.set(0, 5, 0)
     controls.update()
 
-    addGround(scene, config.groundSize)
+    scene.background = addBackground()
     addLights(scene)
     
-    controller = new Controller(scene, camera);
+    generateController(scene, camera);
+
+    addGUI(scene)
+
 }
 
 
@@ -66,5 +74,4 @@ function animate() {
   controller.step()
   renderer.render(scene, camera)
 }
-
 
