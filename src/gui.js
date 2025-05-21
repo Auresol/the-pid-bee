@@ -63,8 +63,8 @@ function addGUI(scene) {
   //   })
 
   const bee_folder = gui.addFolder('Bee parameter')
-  bee_folder.add(param, 'pidValueScale', 1, 2)
-    .name('PID scale (use with cuation)')
+  bee_folder.add(param, 'pidValueScale', 0, 2)
+    .name('PID scale')
     .onChange(() => {
         config.pidValueScale = param.pidValueScale
         controller.update_config_value()
@@ -83,8 +83,8 @@ function addGUI(scene) {
         controller.update_config_value()
     })
 
-  bee_folder.add(param, 'stateChange', 2, 10)
-    .name('Period of change')
+  bee_folder.add(param, 'stateChange')
+    .name('Period of state change')
     .onChange(() => {
         config.stateChange = param.stateChange
         controller.update_config_period()
@@ -101,7 +101,7 @@ function addGUI(scene) {
 
   wind_folder
     .add(param, 'windStrength', 5, 50)
-    .name("Wind strenght")
+    .name("Wind strength")
     .onChange(() => {
       config.windStrength = param.windStrength
     })

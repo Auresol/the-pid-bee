@@ -3,7 +3,7 @@ import {
 } from 'three'
 
 export const config = {
-  
+
   /* stage config */
   groundSize: 100,
   numberOfFlowers: 40,

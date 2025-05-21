@@ -61,7 +61,6 @@ export default class Bee {
 
   async init() {
     await this.loadModel();
-    this.cpid3_init();
     this.update_config_value();
     this.hovering_cpid_val3()
     this.opid_init();
@@ -198,61 +197,67 @@ export default class Bee {
   
   foraging_cpid_val3() {
     this.pos_kp = new Vector3(0.7, 0.7, 0.7).multiplyScalar(config.pidValueScale);
+    this.pos_ki = new Vector3(0, 0, 0); 
+    this.pos_accu_ki = new Vector3();
     this.pos_kd = new Vector3(0.3, 0.3, 0.3).multiplyScalar(config.pidValueScale);
-    this.pos_old_kd = new Vector3(0, 0, 0)
+    this.pos_old_kd = new Vector3(0, 0, 0) 
 
     this.vel_kp = new Vector3(4, 4, 4).multiplyScalar(config.pidValueScale);
+    this.vel_ki = new Vector3(0, 0, 0); 
+    this.vel_accu_ki = new Vector3();
     this.vel_kd = new Vector3(0.4, 0.4, 0.4).multiplyScalar(config.pidValueScale);
-    this.vel_old_kd = new Vector3(0, 0, 0)
+    this.vel_old_kd = new Vector3(0, 0, 0) 
   }
 
   hovering_cpid_val3() {
     this.pos_kp = new Vector3(0.9, 0.9, 0.9).multiplyScalar(config.pidValueScale);
+    this.pos_ki = new Vector3(0, 0, 0); 
+    this.pos_accu_ki = new Vector3();
     this.pos_kd = new Vector3(0.3, 0.45, 0.3).multiplyScalar(config.pidValueScale);
     this.pos_old_kd = new Vector3(0, 0, 0)
 
     this.vel_kp = new Vector3(4, 3, 4).multiplyScalar(config.pidValueScale);
+    this.vel_ki = new Vector3(0, 0, 0); 
+    this.vel_accu_ki = new Vector3();
     this.vel_kd = new Vector3(0.9, 0.4, 0.9).multiplyScalar(config.pidValueScale);
     this.vel_old_kd = new Vector3(0, 0, 0);
   }
-
   cpid3(dt) {
     if (dt <= 0 || isNaN(dt)) return;
 
-    let pos_dis = this.target_pos.clone().sub(this.pos)
-    //let pos_dir = new Vector3().subVectors(this.target_pos, this.pos).normalize();
-    let pos_p_kd = new Vector3();
-    if(dt != 0) {
-      pos_p_kd = this.pos_kd.clone().multiply(this.pos_old_kd.sub(pos_dis).multiplyScalar(1/dt))
+    // --- Position Control ---
+    let pos_dis = this.target_pos.clone().sub(this.pos); 
+
+    let pos_derivative_term = new Vector3();
+    if(dt > 0.0001) {
+      pos_derivative_term = this.pos_kd.clone().multiply(this.pos_old_kd.clone().sub(pos_dis).multiplyScalar(1/dt));
     }
-    this.pos_old_kd = pos_dis;
+    this.pos_old_kd = pos_dis.clone();
 
-    let desire_vel = this.pos_kp.clone().multiply(pos_dis).add(pos_p_kd)
+    this.pos_accu_ki.add(pos_dis.clone().multiply(this.pos_ki).multiplyScalar(dt));
 
-    let vel_dis = desire_vel.clone().sub(this.vel)
-    //let vel_dir = new Vector3().subVectors(this.target_pos, this.vel).normalize();
+    let desire_vel = this.pos_kp.clone().multiply(pos_dis)
+                       .add(this.pos_accu_ki)               
+                       .add(pos_derivative_term);           
 
-    let vel_p_kd = new Vector3();
-    if(dt != 0) {
-      vel_p_kd = this.vel_kd.clone().multiply(this.vel_old_kd.sub(vel_dis).multiplyScalar(1/dt))
+    // --- Velocity Control ---
+    let vel_dis = desire_vel.clone().sub(this.vel);
+
+    let vel_derivative_term = new Vector3();
+    if(dt > 0.0001) {
+      vel_derivative_term = this.vel_kd.clone().multiply(this.vel_old_kd.clone().sub(vel_dis).multiplyScalar(1/dt));
     }
-    this.vel_old_kd = vel_dis;
-    let desire_force = this.vel_kp.clone().multiply(vel_dis).add(vel_p_kd)
 
-    this.force.add(desire_force)
+    this.vel_old_kd = vel_dis.clone(); 
+    this.vel_accu_ki.add(vel_dis.clone().multiply(this.vel_ki).multiplyScalar(dt));
+
+    let desire_force = this.vel_kp.clone().multiply(vel_dis)
+                       .add(this.vel_accu_ki)                
+                       .add(vel_derivative_term);         
+
+    this.force.add(desire_force);
   }
-  cpid3_init() {
-    this.pos_error_prev = new Vector3();
-    this.pos_error_prev_prev = new Vector3();
-    this.vel_error_prev = new Vector3();
-    this.vel_error_prev_prev = new Vector3();
 
-    this.pos_pid_prev = new Vector3();
-    this.vel_pid_prev = new Vector3();
-
-    this.desired_vel = new Vector3(); // Accumulated desired velocity
-    this.desired_force = new Vector3(); // Accumulated desired force
-  }
   // foraging_cpid_val3() {
   //   this.pos_kp = new Vector3(0.7, 1.2, 0.7).multiplyScalar(config.pidValueScale);
   //   //this.pos_ki = new Vector3(0.01, 0.02, 0.01).multiplyScalar(config.pidValueScale); // Example Ki
@@ -338,7 +343,7 @@ export default class Bee {
 
   drag(dt) {
     this.force.add(this.force.clone()
-      .normalize().multiplyScalar(this.vel.length() * -config.dragCof * dt))
+      .normalize().multiplyScalar(this.vel.length() * -config.dragCof))
   }
   
 

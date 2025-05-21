@@ -22,7 +22,7 @@ export default class Hive {
 
     async loadModel() {
       try {
-          const gltf = await gltfLoader.loadAsync('/models/hivebox/hivebox.gltf');
+          const gltf = await gltfLoader.loadAsync('/models/hivebox.glb');
           this.body = gltf.scene;
           this.body.name = 'bee';
           this.body.position.copy(this.pos);
